@@ -1,9 +1,14 @@
 package com.chiikawa.chiikawacoding.service;
 
+import com.chiikawa.chiikawacoding.model.dto.user.UserQueryRequest;
 import com.chiikawa.chiikawacoding.model.vo.LoginUserVO;
+import com.chiikawa.chiikawacoding.model.vo.UserVO;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.chiikawa.chiikawacoding.model.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
 
 /**
  * 用户 服务层。
@@ -59,4 +64,9 @@ public interface UserService extends IService<User> {
      */
     boolean userLogout(HttpServletRequest request);
 
+    UserVO getUserVO(User user);
+
+    List<UserVO> getUserVOList(List<User> userList);
+
+    QueryWrapper getQueryWrapper(UserQueryRequest userQueryRequest);
 }

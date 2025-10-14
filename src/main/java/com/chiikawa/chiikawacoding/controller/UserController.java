@@ -136,6 +136,12 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    @GetMapping("/get/login")
+    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getLoginUserVO(loginUser));
+    }
+
 
     /**
      * 创建用户

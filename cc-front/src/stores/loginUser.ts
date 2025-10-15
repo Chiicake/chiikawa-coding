@@ -19,6 +19,13 @@ export const useLoginUserStore = defineStore('loginUser', () => {
   function setLoginUser(newLoginUser: any) {
     loginUser.value = newLoginUser
   }
+  
+  // 退出登录，清除用户状态
+  function logout() {
+    loginUser.value = {
+      userName: '未登录',
+    }
+  }
 
-  return { loginUser, setLoginUser, fetchLoginUser }
+  return { loginUser, setLoginUser, fetchLoginUser, logout }
 })

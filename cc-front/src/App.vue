@@ -7,6 +7,11 @@ healthCheck().then((res) => {
   console.log(res)
 })
 
+// import { useLoginUserStore } from '@/stores/loginUser.ts'
+
+// const loginUserStore = useLoginUserStore()
+// loginUserStore.fetchLoginUser()
+
 </script>
 
 <template>

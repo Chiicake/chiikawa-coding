@@ -13,39 +13,91 @@
         <a-menu
           mode="horizontal"
           :selectedKeys="[currentPath]"
+          :items="menuItems"
           class="menu"
           @select="handleMenuSelect"
-        >
-          <a-menu-item v-for="item in menuItems" :key="item.path">
-            <router-link :to="item.path">
-              {{ item.name }}
-            </router-link>
-          </a-menu-item>
-        </a-menu>
+        />
+      </div>
+      <div class="user-login-status">
+        <div v-if="loginUserStore.loginUser.id">
+          <a-dropdown>
+            <a-space class="user-avatar-container">
+              <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+              {{ loginUserStore.loginUser.userName ?? "Chiikawa" }}
+              <a-icon type="down" />
+            </a-space>
+            <template #overlay>
+              <a-menu @click="handleLogout">
+                <a-menu-item key="logout">
+                  <a-icon type="logout" />
+                  <span>退出登录</span>
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
+        </div>
+        <div v-else>
+          <a-button type="primary" href="/user/login">登录</a-button>
+        </div>
       </div>
 
-      <!-- 用户区域 -->
-      <div class="user-area">
-        <a-button type="primary" @click="handleLogin">登录</a-button>
-      </div>
     </div>
   </a-layout-header>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import type { MenuProps } from 'ant-design-vue'
+import { HomeOutlined } from '@ant-design/icons-vue'
+import { userLogout } from '@/api/userController.ts'
+import { message } from 'ant-design-vue'
+import { useLoginUserStore } from '@/stores/loginUser.ts'
+// 导入图片资源
+import iconImg from '@/assets/images/icon.png'
 
-// 菜单配置
-const menuItems = ref([
-  { path: '/', name: '首页' },
-  { path: '/about', name: '关于' }
-])
-
+// 初始化状态和路由
 const router = useRouter()
+const loginUserStore = useLoginUserStore()
 const siteTitle = ref('Chiikawa Coding')
-const logoUrl = ref<string>('src/assets/images/icon.png')
+const logoUrl = ref<string>(iconImg)
+
+// 菜单配置项
+const originItems = [
+  {
+    key: '/',
+    icon: () => h(HomeOutlined),
+    label: '主页',
+    title: '主页',
+  },
+  {
+    key: "/admin/userManage",
+    label: '用户管理',
+    title: '用户管理',
+  },
+  {
+    key: 'others',
+    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
+    title: '编程导航',
+  },
+]
+
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    const menuKey = menu?.key as string
+    if (menuKey?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+// 展示在菜单的路由数组
+const menuItems = computed<MenuProps['items']>(() => filterMenus(originItems))
 
 // 获取当前路径
 const currentPath = computed(() => {
@@ -53,15 +105,69 @@ const currentPath = computed(() => {
 })
 
 // 处理菜单选择
-const handleMenuSelect = (selectedKeys: string[]) => {
-  const path = selectedKeys[0]
-  router.push(path)
+const handleMenuSelect = (selectedKeys: any) => {
+  try {
+    console.log('Menu selected keys type:', typeof selectedKeys)
+    console.log('Menu selected keys value:', selectedKeys)
+    
+    // 处理不同类型的selectedKeys参数
+    let path: string | undefined
+    if (Array.isArray(selectedKeys) && selectedKeys.length > 0) {
+      path = selectedKeys[0]
+    } else if (typeof selectedKeys === 'string') {
+      path = selectedKeys
+    } else if (selectedKeys && typeof selectedKeys === 'object' && selectedKeys.key) {
+      // 处理可能的对象格式，如 { key: '/path' }
+      path = selectedKeys.key
+    }
+    
+    console.log('Extracted path:', path)
+    
+    if (!path || typeof path !== 'string') {
+      console.error('Invalid path (not a string or empty):', path)
+      return
+    }
+    
+    // 确保router已正确初始化
+    if (!router || typeof router.push !== 'function') {
+      console.error('Router not properly initialized:', router)
+      return
+    }
+    
+    // 安全地执行路由跳转
+    router.push(path).then(() => {
+      console.log('Navigation successful to:', path)
+    }).catch(error => {
+      console.error('Navigation error:', error)
+    })
+  } catch (error) {
+    console.error('Error in handleMenuSelect:', error)
+  }
 }
 
 // 处理登录
 const handleLogin = () => {
   // 实际项目中应该跳转到登录页面
   console.log('登录按钮点击')
+}
+
+// 处理退出登录
+const handleLogout = async () => {
+  try {
+    const res = await userLogout()
+    if (res.data.code === 0) {
+      // 清除登录状态
+      await loginUserStore.logout()
+      message.success('退出登录成功')
+      // 跳转到登录页面
+      router.push('/user/login')
+    } else {
+      message.error('退出登录失败: ' + res.data.message)
+    }
+  } catch (error) {
+    message.error('退出登录失败，请稍后重试')
+    console.error('退出登录错误:', error)
+  }
 }
 
 </script>
@@ -130,6 +236,25 @@ const handleLogin = () => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.user-avatar-container {
+  padding: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user-avatar-container:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+:deep(.ant-dropdown-menu-item) {
+  transition: background-color 0.3s;
+}
+
+:deep(.ant-dropdown-menu-item:hover) {
+  background-color: #f5f5f5;
 }
 
 /* 响应式设计 */

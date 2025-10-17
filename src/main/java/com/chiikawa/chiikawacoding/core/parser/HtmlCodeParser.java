@@ -1,5 +1,6 @@
 package com.chiikawa.chiikawacoding.core.parser;
 
+import cn.hutool.json.JSONObject;
 import com.chiikawa.chiikawacoding.ai.model.HtmlCodeResult;
 
 import java.util.regex.Matcher;
@@ -23,6 +24,28 @@ public class HtmlCodeParser implements CodeParser<HtmlCodeResult> {
         } else {
             // 如果没有找到代码块，将整个内容作为HTML
             result.setHtmlCode(codeContent.trim());
+        }
+        return result;
+    }
+
+    /**
+     * 解析 JSON 格式的代码内容
+     *
+     * @param jsonContent JSON 格式的代码内容
+     * @return 解析后的结果对象
+     */
+    @Override
+    public HtmlCodeResult parseJSONCode(String jsonContent) {
+        HtmlCodeResult result = new HtmlCodeResult();
+        // 从 JSON 中提取 HTML 代码
+        // 解析JSON
+        JSONObject jsonObject = new JSONObject(jsonContent);
+        String htmlCode = jsonObject.getStr("html");
+        if (htmlCode != null && !htmlCode.trim().isEmpty()) {
+            result.setHtmlCode(htmlCode.trim());
+        } else {
+            // 如果没有找到代码块，将整个内容作为HTML
+            result.setHtmlCode(jsonContent.trim());
         }
         return result;
     }

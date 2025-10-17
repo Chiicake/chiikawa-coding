@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Flux;
 
 import java.io.File;
+import java.util.List;
 
 @SpringBootTest
 class AiCodeGeneratorFacadeTest {
@@ -18,15 +19,20 @@ class AiCodeGeneratorFacadeTest {
 
     @Test
     void generateAndSaveCode() {
-        File file = aiCodeGeneratorFacade.generateAndSaveCode("潘凯闻爱李美慧网站", CodeGenTypeEnum.MULTI_FILE);
+        File file = aiCodeGeneratorFacade.generateAndSaveCode("任务记录网站", CodeGenTypeEnum.MULTI_FILE, 1L);
         Assertions.assertNotNull(file);
     }
 
     @Test
-    void generateAndSaveCodeFlux() {
-        Flux<String> flux = aiCodeGeneratorFacade.generateAndSaveCodeStream("做爱记录网站，包括做爱时间、做爱体验、高潮次数等", CodeGenTypeEnum.MULTI_FILE);
-        // 把flux的结果流式打印
-        flux.subscribe(System.out::println);
+    void generateAndSaveCodeStream() {
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("任务记录网站", CodeGenTypeEnum.MULTI_FILE, 1L);
+        // 阻塞等待所有数据收集完成
+        List<String> result = codeStream.collectList().block();
+        // 验证结果
+        Assertions.assertNotNull(result);
+        String completeContent = String.join("", result);
+        Assertions.assertNotNull(completeContent);
     }
+
 
 }

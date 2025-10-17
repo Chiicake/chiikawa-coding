@@ -1,11 +1,13 @@
 package com.chiikawa.chiikawacoding.service;
 
 import com.chiikawa.chiikawacoding.model.dto.app.AppQueryRequest;
+import com.chiikawa.chiikawacoding.model.entity.User;
 import com.chiikawa.chiikawacoding.model.vo.AppVO;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.chiikawa.chiikawacoding.model.entity.App;
 import jakarta.servlet.http.HttpServletRequest;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -107,4 +109,6 @@ public interface AppService extends IService<App> {
      * @return 应用VO列表
      */
     List<AppVO> getAppVOList(List<App> appList);
+
+    Flux<String> chatToGenCode(Long appId, String message, User loginUser);
 }

@@ -13,4 +13,12 @@ public interface CodeParser<T> {
      * @return 解析后的结果对象
      */
     T parseCode(String codeContent);
+
+    /**
+     * 解析 JSON 格式的代码内容
+     *
+     * @param jsonContent JSON 格式的代码内容
+     * @return 解析后的结果对象
+     */
+    T parseJSONCode(String jsonContent);
 }

@@ -1,5 +1,6 @@
 package com.chiikawa.chiikawacoding.core.parser;
 
+import cn.hutool.json.JSONObject;
 import com.chiikawa.chiikawacoding.ai.model.MultiFileCodeResult;
 
 import java.util.regex.Matcher;
@@ -22,6 +23,35 @@ public class MultiFileCodeParser implements CodeParser<MultiFileCodeResult> {
         String htmlCode = extractCodeByPattern(codeContent, HTML_CODE_PATTERN);
         String cssCode = extractCodeByPattern(codeContent, CSS_CODE_PATTERN);
         String jsCode = extractCodeByPattern(codeContent, JS_CODE_PATTERN);
+        // 设置HTML代码
+        if (htmlCode != null && !htmlCode.trim().isEmpty()) {
+            result.setHtmlCode(htmlCode.trim());
+        }
+        // 设置CSS代码
+        if (cssCode != null && !cssCode.trim().isEmpty()) {
+            result.setCssCode(cssCode.trim());
+        }
+        // 设置JS代码
+        if (jsCode != null && !jsCode.trim().isEmpty()) {
+            result.setJsCode(jsCode.trim());
+        }
+        return result;
+    }
+
+    /**
+     * 解析 JSON 格式的代码内容
+     *
+     * @param jsonContent JSON 格式的代码内容
+     * @return 解析后的结果对象
+     */
+    @Override
+    public MultiFileCodeResult parseJSONCode(String jsonContent) {
+        MultiFileCodeResult result = new MultiFileCodeResult();
+        // 解析JSON
+        JSONObject jsonObject = new JSONObject(jsonContent);
+        String htmlCode = jsonObject.getStr("html");
+        String cssCode = jsonObject.getStr("css");
+        String jsCode = jsonObject.getStr("js");
         // 设置HTML代码
         if (htmlCode != null && !htmlCode.trim().isEmpty()) {
             result.setHtmlCode(htmlCode.trim());

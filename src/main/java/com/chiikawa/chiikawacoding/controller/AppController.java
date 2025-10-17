@@ -22,8 +22,11 @@ import com.chiikawa.chiikawacoding.service.AppService;
 import com.chiikawa.chiikawacoding.service.UserService;
 import com.mybatisflex.core.paginate.Page;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.request.WebRequest;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -237,4 +240,41 @@ public class AppController {
         appVOPage.setRecords(appService.getAppVOList(appPage.getRecords()));
         return ResultUtils.success(appVOPage);
     }
+
+    /**
+     * 应用聊天生成代码（流式 SSE）
+     *
+     * @param appId   应用 ID
+     * @param message 用户消息
+     * @param request 请求对象
+     * @return 生成结果流
+     */
+    @GetMapping(value = "/chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chatToGenCode(@RequestParam Long appId,
+                                      @RequestParam String message,
+                                      HttpServletRequest request) {
+        // 参数校验
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用ID无效");
+        ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "用户消息不能为空");
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser(request);
+        // 调用服务生成代码（流式）
+        return appService.chatToGenCode(appId, message, loginUser);
+    }
+
 }
+
+//# 1. 用户登录
+//Invoke-WebRequest -Uri "http://localhost:8123/api/user/login" -Method Post -Headers @{ "Content-Type" = "application/json" } -Body '{"userAccount": "pkw123", "userPassword": "pan20010913"}'
+//curl -X POST "http://localhost:8123/api/user/login" -H "Content-Type: application/json" -d '{ "userAccount": "pkw123","userPassword": "pan20010913"}' -c cookies.txt
+//
+//        # 2. 调用生成代码接口（流式）
+//curl -G "http://localhost:8123/api/app/chat/gen/code" --data-urlencode "appId=123456" --data-urlencode "message=我需要一个简单的任务记录工具网站" -H "Accept: text/event-stream"-H "Cache-Control: no-cache"-b cookies.txt --no-buffer
+//Invoke-WebRequest -Uri "http://localhost:8123/api/app/chat/gen/code?appId=123456&message=我需要一个简单的任务记录工具网站" `
+//        -Method Get `
+//        -Headers @{
+//    "Accept" = "text/event-stream"
+//    "Cache-Control" = "no-cache"
+//} `
+//        -CookieFile "cookies.txt" `
+//        -NoProgress

@@ -53,6 +53,7 @@ import { HomeOutlined } from '@ant-design/icons-vue'
 import { userLogout } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/loginUser.ts'
+import ACCESS_ENUM from '@/access/accessEnum'
 // 导入图片资源
 import iconImg from '@/assets/images/icon.png'
 
@@ -76,9 +77,9 @@ const originItems = [
     title: '用户管理',
   },
   {
-    key: 'others',
-    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
-    title: '编程导航',
+    key: '/admin/appManage',
+    label: '应用查询',
+    title: '应用查询',
   },
 ]
 
@@ -88,7 +89,8 @@ const filterMenus = (menus = [] as MenuProps['items']) => {
     const menuKey = menu?.key as string
     if (menuKey?.startsWith('/admin')) {
       const loginUser = loginUserStore.loginUser
-      if (!loginUser || loginUser.userRole !== 'admin') {
+      const role = String(loginUser?.userRole || '').toLowerCase()
+      if (!loginUser || role !== ACCESS_ENUM.ADMIN) {
         return false
       }
     }
@@ -281,3 +283,4 @@ const handleLogout = async () => {
   }
 }
 </style>
+

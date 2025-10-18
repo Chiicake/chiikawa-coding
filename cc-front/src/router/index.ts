@@ -11,9 +11,6 @@ const router = createRouter({
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('@/pages/AboutView.vue'),
     },
     {
@@ -39,7 +36,29 @@ const router = createRouter({
         access: ACCESS_ENUM.ADMIN,
       },
     },
-    
+    {
+      path: '/app/chat/:id',
+      name: '应用对话',
+      component: () => import('@/pages/AppChatPage.vue'),
+    },
+    {
+      path: '/app/edit/:id',
+      name: '编辑应用',
+      component: () => import('@/pages/AppEditPage.vue'),
+    },
+    {
+      path: '/admin/appManage',
+      name: '应用查询',
+      component: () => import('@/pages/admin/AppManagePage.vue'),
+      meta: {
+        access: ACCESS_ENUM.ADMIN,
+      },
+    },
+    {
+      path: '/noAuth',
+      name: '无权限',
+      component: () => import('@/pages/noAuth.vue'),
+    },
   ],
 })
 

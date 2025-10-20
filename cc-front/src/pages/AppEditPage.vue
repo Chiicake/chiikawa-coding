@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { getAppById, updateApp } from '@/api/appController'
+import { getAppById, updateApp, updateAppForAdmin } from '@/api/appController'
 // 移除不存在的类型导入
 import { useLoginUserStore } from '@/stores/loginUser'
 import { Form, Input, Button, Card, Upload, InputNumber, Typography, Space } from 'ant-design-vue'
@@ -89,24 +89,35 @@ const handleSubmit = async () => {
   
   formLoading.value = true
   try {
-    const updateData: any = {
-      appName: formData.value.appName.trim()
-    }
-    
-    // 管理员可以更新优先级和封面
-    if (isAdmin.value) {
-      updateData.priority = formData.value.priority
-      if (coverImage.value[0]?.url) {
-        updateData.cover = coverImage.value[0].url
+    // 非管理员：只能更新名称
+    if (!isAdmin.value) {
+      const response = await updateApp({
+        id: appId.value,
+        appName: formData.value.appName.trim()
+      })
+      if (response.data.code === 0) {
+        message.success('更新成功')
+        router.push(`/app/chat/${appId.value}`)
+      } else {
+        message.error(response.data.message || '更新失败')
       }
-    }
-    
-    const response = await updateApp(appId.value as any, updateData)
-    if (response.data.code === 0) {
-      message.success('更新成功')
-      router.push(`/app/chat/${appId.value}`)
     } else {
-      message.error(response.data.message || '更新失败')
+      // 管理员：可更新名称、优先级、封面
+      const adminUpdateBody: any = {
+        id: appId.value,
+        appName: formData.value.appName.trim(),
+        priority: formData.value.priority
+      }
+      if (coverImage.value[0]?.url) {
+        adminUpdateBody.cover = coverImage.value[0].url
+      }
+      const response = await updateAppForAdmin(adminUpdateBody)
+      if (response.data.code === 0) {
+        message.success('更新成功')
+        router.push(`/app/chat/${appId.value}`)
+      } else {
+        message.error(response.data.message || '更新失败')
+      }
     }
   } catch (error) {
     message.error('更新失败')

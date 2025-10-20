@@ -10,4 +10,7 @@ import com.chiikawa.chiikawacoding.model.entity.ChatHistory;
  */
 public interface ChatHistoryService extends IService<ChatHistory> {
 
+    boolean addChatMessage(Long appId, String message, String messageType, Long userId);
+
+    boolean deleteByAppId(Long appId);
 }

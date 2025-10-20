@@ -6,8 +6,42 @@ import { getAppById, deployApp, updateApp } from '@/api/appController'
 // 移除不存在的导入
 // 移除不存在的类型导入
 import { useLoginUserStore } from '@/stores/loginUser'
-import { Button, Input, Card, Layout, Tabs, Modal, notification } from 'ant-design-vue'
+import { Button, Input, Card, Layout, Tabs, Modal, notification, Tooltip } from 'ant-design-vue'
 import type { TabsProps } from 'ant-design-vue'
+
+// 新增：Markdown 渲染与代码高亮
+import MarkdownIt from 'markdown-it'
+import hljs from 'highlight.js/lib/common'
+import DOMPurify from 'dompurify'
+import 'highlight.js/styles/github.css'
+
+// Markdown 渲染器配置（放在 <script setup> 内）
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight: (str: string, lang?: string) => {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return '<pre class="hljs"><code>' + hljs.highlight(str, { language: lang }).value + '</code></pre>'
+      } catch (__) {}
+    }
+    try {
+      return '<pre class="hljs"><code>' + hljs.highlightAuto(str).value + '</code></pre>'
+    } catch (__) {
+      return '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>'
+    }
+  }
+})
+
+// 将 Markdown 转为安全 HTML
+const renderMarkdown = (text: string) => {
+  try {
+    return DOMPurify.sanitize(md.render(text || ''))
+  } catch (e) {
+    return DOMPurify.sanitize(md.render(''))
+  }
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +60,8 @@ const newAppName = ref('')
 const generatingCompleted = ref(false)
 const showWebPreview = ref(false)
 const previewCollapsed = ref(false)
+// 是否为自己的作品，控制编辑权限
+const isOwnApp = ref(false)
 
 
 
@@ -43,6 +79,8 @@ const fetchAppInfo = async () => {
         deploymentUrl.value = app.value.deployUrl
         showWebPreview.value = true
       }
+      // 设置是否为自己的作品
+      isOwnApp.value = !!loginUserStore.loginUser && loginUserStore.loginUser.id === app.value.userId
     } else {
       message.error(response.data.message || '获取应用信息失败')
       router.push('/')
@@ -231,7 +269,7 @@ const scrollToBottom = () => {
   }
 }
 
-// 检查用户权限
+// 检查用户权限（仅要求登录即可进入对话页）
 const checkUserPermission = () => {
   if (!loginUserStore.loginUser) {
     router.push('/user/login')
@@ -254,12 +292,17 @@ onMounted(async () => {
   
   if (!checkUserPermission()) return
   
+  await loginUserStore.fetchLoginUser()
   await fetchAppInfo()
   
-  // 如果是新创建的应用，自动发送初始提示词
+  // 始终将初始化提示词填入输入框；当存在 view=1 参数时，不自动发送
+  const viewFlag = route.query.view
+  const isViewOnly = viewFlag === '1' || viewFlag === 1
   if (app.value && app.value.initPrompt && messages.value.length === 0) {
     newMessage.value = app.value.initPrompt
-    handleSendMessage()
+    if (!isViewOnly) {
+      handleSendMessage()
+    }
   }
 })
 
@@ -329,7 +372,10 @@ watch(() => route.params.id, (newId) => {
               <div class="message-avatar">
                 {{ msg.role === 'user' ? '👤' : '🤖' }}
               </div>
-              <div class="message-content">
+              <div class="message-content" v-if="msg.role === 'ai'">
+                <div class="message-text markdown-body" v-html="renderMarkdown(msg.content)"></div>
+              </div>
+              <div class="message-content" v-else>
                 <pre class="message-text">{{ msg.content }}</pre>
               </div>
             </div>
@@ -340,21 +386,24 @@ watch(() => route.params.id, (newId) => {
           </div>
           
           <!-- 消息输入框 -->
-          <div class="message-input-wrapper">
-            <Input.TextArea
-              v-model:value="newMessage"
-              :placeholder="'输入您的想法，让AI帮您改进网站...'"
-              :rows="3"
-              show-count
-              :max-length="1000"
-              @keyup.enter.ctrl="handleSendMessage"
-              :disabled="isSending"
-              style="flex: 1;"
-            />
+          <div class="message-input-wrapper" :class="{ 'disabled': !isOwnApp }">
+            <Tooltip :title="!isOwnApp ? '无法在别人的作品下对话哦~' : ''">
+              <Input.TextArea
+                v-model:value="newMessage"
+                :placeholder="'输入您的想法，让AI帮您改进网站...'"
+                :rows="3"
+                show-count
+                :max-length="1000"
+                @keyup.enter.ctrl="handleSendMessage"
+                :disabled="isSending || !isOwnApp"
+                style="flex: 1;"
+              />
+            </Tooltip>
             <Button 
               type="primary" 
               @click="handleSendMessage"
               :loading="isSending"
+              :disabled="!isOwnApp"
               class="send-button"
             >
               {{ isSending ? '发送中...' : '发送' }}
@@ -483,7 +532,7 @@ body, html {
   justify-content: space-between;
   align-items: center;
   width: 80%;
-  max-width: 1200px; /* 限制最大宽度，使内容更加紧凑 */
+  max-width: 1200px; /* 限制最大宽度，使内容更加紧减 */
 }
 
 .app-title {
@@ -498,6 +547,12 @@ body, html {
   gap: 8px;
 }
 
+/* 输入框在禁用时鼠标样式 */
+.message-input-wrapper.disabled textarea {
+  cursor: not-allowed;
+}
+
+/* 内容容器 */
 .app-content {
   flex: 1;
   width: 100%;
@@ -519,7 +574,7 @@ body, html {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 左侧对话区域 - 调整为更合适的大小 */
+/* 左侧对话区域 */
 .chat-sider {
   flex: 1;
   display: flex;
@@ -530,9 +585,9 @@ body, html {
   overflow: hidden;
 }
 
-/* 右侧预览区域 - 减小尺寸 */
+/* 右侧预览区域 */
 .preview-sider {
-  width: 32%; /* 原为40%，适当缩窄 */
+  width: 32%;
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -540,7 +595,7 @@ body, html {
   overflow: hidden;
 }
 
-/* 消息容器 - 可滚动区域 */
+/* 消息容器 */
 .message-container {
   flex: 1;
   overflow-y: auto;
@@ -548,61 +603,26 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* 美化滚动条 */
   scrollbar-width: thin;
   scrollbar-color: #d9d9d9 #f5f5f5;
 }
+.message-container::-webkit-scrollbar { width: 6px; }
+.message-container::-webkit-scrollbar-track { background: #f5f5f5; }
+.message-container::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+.message-container::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
 
-/* Webkit滚动条样式 */
-.message-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.message-container::-webkit-scrollbar-track {
-  background: #f5f5f5;
-}
-
-.message-container::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 3px;
-}
-
-.message-container::-webkit-scrollbar-thumb:hover {
-  background: #bfbfbf;
-}
-
-/* 消息样式 - 减小对话框大小 */
+/* 消息样式 */
 .message-wrapper {
   display: flex;
   gap: 8px;
   align-items: flex-start;
   margin-bottom: 4px;
 }
-
-.message-wrapper.user {
-  flex-direction: row-reverse;
-}
-
-.message-wrapper.ai {
-  flex-direction: row;
-}
-
-.message-avatar {
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.message-content {
-  max-width: 70%;
-  word-wrap: break-word;
-  flex-shrink: 0;
-}
-
-.message-wrapper.user .message-content {
-  text-align: right;
-}
-
+.message-wrapper.user { flex-direction: row-reverse; }
+.message-wrapper.ai { flex-direction: row; }
+.message-avatar { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.message-content { max-width: 70%; word-wrap: break-word; flex-shrink: 0; }
+.message-wrapper.user .message-content { text-align: right; }
 .message-text {
   background: #f0f0f0;
   padding: 8px 12px;
@@ -614,18 +634,9 @@ body, html {
   line-height: 1.4;
   font-size: 14px;
 }
+.message-wrapper.user .message-text { background: #1890ff; color: #fff; }
 
-.message-wrapper.user .message-text {
-  background: #1890ff;
-  color: #fff;
-}
-
-.empty-messages {
-  text-align: center;
-  color: #999;
-  margin-top: 48px;
-  font-size: 16px;
-}
+.empty-messages { text-align: center; color: #999; margin-top: 48px; font-size: 16px; }
 
 /* 输入区域 */
 .message-input-wrapper {
@@ -637,39 +648,32 @@ body, html {
   gap: 12px;
   align-items: flex-start;
 }
-
-.send-button {
-  margin-top: 0;
-  float: none;
-}
+.send-button { margin-top: 0; float: none; }
 
 /* 让Tabs在预览侧充满高度 */
-.preview-sider :deep(.ant-tabs) {
-  height: 100%;
-}
-.preview-sider :deep(.ant-tabs-content-holder) {
-  height: 100%;
-}
-.preview-sider :deep(.ant-tabs-content) {
-  height: 100%;
-}
-.preview-sider :deep(.ant-tabs-tabpane) {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+.preview-sider :deep(.ant-tabs) { height: 100%; }
+.preview-sider :deep(.ant-tabs-content-holder) { height: 100%; }
+.preview-sider :deep(.ant-tabs-content) { height: 100%; }
+.preview-sider :deep(.ant-tabs-tabpane) { height: 100%; display: flex; flex-direction: column; }
 
 /* 预览容器与iframe填满高度 */
-.web-preview-container {
-  flex: 1;
-  display: flex;
-  height: 100%;
+.web-preview-container { flex: 1; display: flex; height: 100%; }
+.web-preview { width: 100%; height: 100%; border: 0; }
+
+/* Markdown 内容样式微调 */
+.markdown-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
 }
-.web-preview {
-  width: 100%;
-  height: 100%;
-  border: 0;
+.markdown-body pre {
+  background: #f6f8fa;
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow: auto;
 }
+.markdown-body code {
+  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+}
+.markdown-body p { margin: 0 0 8px; }
 </style>
-
-

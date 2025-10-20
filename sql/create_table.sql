@@ -29,7 +29,7 @@ create table app
 (
     id           bigint auto_increment comment 'id' primary key,
     appName      varchar(256)                       null comment '应用名称',
-    cover        varchar(512)                       null comment '应用封面',
+    cover        varchar(512)      default 'https://picsum.photos/320/180'                 null comment '应用封面',
     initPrompt   text                               null comment '应用初始化的 prompt',
     codeGenType  varchar(64)                        null comment '代码生成类型（枚举）',
     deployKey    varchar(64)                        null comment '部署标识',

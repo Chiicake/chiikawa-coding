@@ -78,8 +78,8 @@ const originItems = [
   },
   {
     key: '/admin/appManage',
-    label: '应用查询',
-    title: '应用查询',
+    label: '应用管理',
+    title: '应用管理',
   },
 ]
 
@@ -283,4 +283,6 @@ const handleLogout = async () => {
   }
 }
 </style>
-
+
+
+

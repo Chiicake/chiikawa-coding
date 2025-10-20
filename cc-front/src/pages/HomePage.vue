@@ -49,7 +49,7 @@ const handleCreateApp = async () => {
         const appId = response.data.data
         console.log('应用创建成功，appId:', appId)
         console.log('尝试跳转到:', `/app/chat/${appId}`)
-        router.push(`/app/chat/${appId}`)
+        router.push(`/app/chat/${appId}?view=1`)
       } else {
         const errorMsg = response.data.message || '创建应用失败'
         console.error('API返回错误:', errorMsg)
@@ -152,9 +152,24 @@ const handleSearch = () => {
   fetchFeaturedApps()
 }
 
-// 点击应用卡片
+// 点击应用卡片（默认进入对话页，带 view=1 防止自动发送）
 const handleAppClick = (app: any) => {
-  router.push(`/app/chat/${app.id}`)
+  router.push(`/app/chat/${app.id}?view=1`)
+}
+
+// 处理查看对话按钮
+const handleViewChat = (app: any) => {
+  router.push(`/app/chat/${app.id}?view=1`)
+}
+
+// 处理查看作品按钮：打开部署地址 localhost/{deployKey}
+const handleViewWork = (app: any) => {
+  if (app.deployKey) {
+    const url = `http://localhost/${app.deployKey}`
+    window.open(url, '_blank')
+  } else {
+    message.warning('该应用尚未部署')
+  }
 }
 
 // 获取默认应用封面
@@ -254,6 +269,10 @@ onMounted(async () => {
               class="app-card"
               @click="handleAppClick(app)"
             >
+              <div class="card-overlay" @click.stop>
+                <Button class="overlay-btn overlay-dark" v-if="app.deployKey" @click.stop="handleViewWork(app)">查看作品</Button>
+                <Button class="overlay-btn overlay-light" @click.stop="handleViewChat(app)">查看对话</Button>
+              </div>
               <Card.Meta 
                 :title="app.appName || '未命名应用'"
                 :description="`创建于 ${new Date(app.createTime || Date.now()).toLocaleDateString()}`"
@@ -302,6 +321,10 @@ onMounted(async () => {
               class="app-card"
               @click="handleAppClick(app)"
             >
+              <div class="card-overlay" @click.stop>
+                <Button class="overlay-btn overlay-dark" v-if="app.deployKey" @click.stop="handleViewWork(app)">查看作品</Button>
+                <Button class="overlay-btn overlay-light" @click.stop="handleViewChat(app)">查看对话</Button>
+              </div>
               <Card.Meta 
                 :title="app.appName || '未命名应用'"
                 :description="`创建于 ${new Date(app.createTime || Date.now()).toLocaleDateString()}`"
@@ -419,11 +442,45 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.3s;
   height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .app-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   transform: translateY(-4px);
+}
+
+.card-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 2;
+}
+
+.app-card:hover .card-overlay {
+  display: flex;
+}
+
+.overlay-btn {
+  border-radius: 24px;
+  padding: 10px 18px;
+}
+
+.overlay-dark {
+  background: #000;
+  color: #fff;
+  border: none;
+}
+
+.overlay-light {
+  background: #fff;
+  color: #000;
 }
 
 .loading-container,

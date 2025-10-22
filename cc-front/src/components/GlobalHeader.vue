@@ -15,6 +15,7 @@
           :selectedKeys="[currentPath]"
           :items="menuItems"
           class="menu"
+          triggerSubMenuAction="hover"
           @select="handleMenuSelect"
         />
       </div>
@@ -70,6 +71,24 @@ const originItems = [
     icon: () => h(HomeOutlined),
     label: '主页',
     title: '主页',
+  },
+  {
+    key: '/generate-menu',
+    label: '应用',
+    title: '应用',
+    disabled: false,
+    children: [
+      {
+        key: '/generate',
+        label: '应用生成',
+        title: '应用生成',
+      },
+      {
+        key: '/my-apps',
+        label: '我的应用',
+        title: '我的应用',
+      }
+    ]
   },
   {
     key: "/admin/userManage",
@@ -283,6 +302,9 @@ const handleLogout = async () => {
   }
 }
 </style>
+
+
+
 
 
 

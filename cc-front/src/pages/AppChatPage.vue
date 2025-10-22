@@ -8,6 +8,8 @@ import { getAppById, deployApp, updateApp } from '@/api/appController'
 import { useLoginUserStore } from '@/stores/loginUser'
 import { Button, Input, Card, Layout, Tabs, Modal, notification, Tooltip } from 'ant-design-vue'
 import type { TabsProps } from 'ant-design-vue'
+import { listAppChatHistory } from '@/api/chatHistoryController'
+import type { API } from '@/api/typings'
 
 // 新增：Markdown 渲染与代码高亮
 import MarkdownIt from 'markdown-it'
@@ -62,8 +64,10 @@ const showWebPreview = ref(false)
 const previewCollapsed = ref(false)
 // 是否为自己的作品，控制编辑权限
 const isOwnApp = ref(false)
-
-
+// 历史记录加载状态与游标
+const historyLoading = ref(false)
+const historyHasMore = ref(false)
+const lastCreateTimeCursor = ref<string | undefined>(undefined)
 
 // 获取应用信息
 const fetchAppInfo = async () => {
@@ -286,6 +290,47 @@ const getStaticFileUrl = () => {
   return `http://localhost:8123/api/static/${deployKey}/index.html`
 }
 
+// 新增：加载应用对话历史（游标分页，按创建时间升序展示）
+const loadChatHistory = async (reset = false) => {
+  if (!appId.value) return
+  if (historyLoading.value) return
+  if (reset) {
+    messages.value = []
+    lastCreateTimeCursor.value = undefined
+  }
+  historyLoading.value = true
+  try {
+    const params: API.listAppChatHistoryParams = {
+      appId: appId.value as string,
+      pageSize: 10,
+    }
+    if (lastCreateTimeCursor.value) {
+      params.lastCreateTime = lastCreateTimeCursor.value
+    }
+    const resp = await listAppChatHistory(params)
+    if (resp.data.code === 0) {
+      const records = resp.data.data?.records || []
+      historyHasMore.value = records.length === 10
+      const asc = [...records].reverse()
+      const mapped = asc.map((r) => ({
+        id: r.id ?? `hist_${r.createTime}`,
+        role: r.messageType === 'user' ? 'user' : 'ai',
+        content: r.message || '',
+        createTime: r.createTime || ''
+      }))
+      const oldest = asc.length > 0 ? asc[0].createTime : undefined
+      if (!lastCreateTimeCursor.value || (oldest && oldest < (lastCreateTimeCursor.value || ''))) {
+        lastCreateTimeCursor.value = oldest
+      }
+      messages.value = [...mapped, ...messages.value]
+    }
+  } catch (e) {
+    message.error('加载对话历史失败')
+  } finally {
+    historyLoading.value = false
+  }
+}
+
 // 页面初始化
 onMounted(async () => {
   appId.value = route.params.id as string
@@ -295,14 +340,19 @@ onMounted(async () => {
   await loginUserStore.fetchLoginUser()
   await fetchAppInfo()
   
-  // 始终将初始化提示词填入输入框；当存在 view=1 参数时，不自动发送
-  const viewFlag = route.query.view
-  const isViewOnly = viewFlag === '1' || viewFlag === 1
-  if (app.value && app.value.initPrompt && messages.value.length === 0) {
+  await loadChatHistory(true)
+  
+  // 读取路由参数，若指定不自动发送，则仅展示历史
+  const noAuto = route.query.noAuto === '1' || route.query.noAuto === 'true'
+  
+  // 自动发送初始提示词：仅当为自己的应用且没有历史记录时，且未设置不自动发送
+  if (!noAuto && isOwnApp.value && app.value?.initPrompt && messages.value.length === 0) {
     newMessage.value = app.value.initPrompt
-    if (!isViewOnly) {
-      handleSendMessage()
-    }
+    await handleSendMessage()
+  }
+  // 展示网站预览：如果对话记录至少2条，展示预览
+  if (messages.value.length >= 2) {
+    showWebPreview.value = true
   }
 })
 
@@ -311,7 +361,8 @@ watch(() => route.params.id, (newId) => {
   if (newId && newId !== appId.value) {
     appId.value = newId as string
     fetchAppInfo()
-    messages.value = []
+    // 重置并重新加载历史
+    loadChatHistory(true)
     generatingCompleted.value = false
     showWebPreview.value = false
   }
@@ -341,8 +392,7 @@ watch(() => route.params.id, (newId) => {
           <Button 
             type="primary" 
             @click="handleDeploy"
-            :loading="isDeploying"
-            v-if="generatingCompleted"
+            v-if="showWebPreview"
           >
             {{ deploymentUrl ? '重新部署' : '部署应用' }}
           </Button>
@@ -363,6 +413,9 @@ watch(() => route.params.id, (newId) => {
       <div class="content-layout">
         <!-- 左侧对话区域 -->
         <div class="chat-sider">
+          <div class="history-actions" v-if="historyHasMore">
+            <Button size="small" :loading="historyLoading" @click="loadChatHistory()">加载更多</Button>
+          </div>
           <div class="message-container">
             <div 
               v-for="msg in messages" 

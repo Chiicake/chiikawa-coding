@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
-import { listUserAppVoByPage, deleteApp, updateAppForAdmin } from '@/api/appController'
+import { listAdminAppVoByPage, deleteApp, updateAppForAdmin } from '@/api/appController'
 import { getUserVoById } from '@/api/userController'
 // 移除不存在的类型导入
 // import { useLoginUserStore } from '@/stores/loginUser'
@@ -26,11 +26,22 @@ const searchParams = ref<any>({
   sortBy: 'desc'
 })
 
+// 表格列定义
+const columns = [
+  { title: '序号', key: 'index' },
+  { title: '应用名称', dataIndex: 'appName', key: 'appName' },
+  { title: '创建者', dataIndex: 'creatorName', key: 'creatorName' },
+  { title: '优先级', dataIndex: 'priority', key: 'priority' },
+  { title: '封面', dataIndex: 'cover', key: 'cover' },
+  { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
+  { title: '操作', dataIndex: 'action', key: 'action' }
+]
+
 // 获取应用列表
 const fetchApps = async () => {
   loading.value = true
   try {
-    const response = await listUserAppVoByPage(searchParams.value)
+    const response = await listAdminAppVoByPage(searchParams.value)
     if (response.data.code === 0) {
       const records = response.data.data?.records || []
       // 并行获取创建用户名称
@@ -103,9 +114,9 @@ const handleEdit = (appId: string) => {
   router.push(`/app/edit/${appId}`)
 }
 
-// 查看应用（使用 view=1 避免进入后自动发送消息）
+// 查看应用
 const handleView = (appId: string) => {
-  router.push(`/app/chat/${appId}?view=1`)
+  router.push(`/app/chat/${appId}`)
 }
 
 // 搜索
@@ -142,6 +153,7 @@ onMounted(() => {
     </div>
 
     <Table
+      :columns="columns"
       :dataSource="apps"
       :loading="loading"
       :pagination="false"

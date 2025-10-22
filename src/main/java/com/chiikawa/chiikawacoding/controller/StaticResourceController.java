@@ -1,6 +1,6 @@
 package com.chiikawa.chiikawacoding.controller;
 
-import com.chiikawa.chiikawacoding.constant.AppConstant;
+import com.chiikawa.chiikawacoding.common.constant.AppConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;

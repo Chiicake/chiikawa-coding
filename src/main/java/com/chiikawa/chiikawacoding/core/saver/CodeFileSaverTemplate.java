@@ -2,9 +2,8 @@
 package com.chiikawa.chiikawacoding.core.saver;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.chiikawa.chiikawacoding.constant.AppConstant;
+import com.chiikawa.chiikawacoding.common.constant.AppConstant;
 import com.chiikawa.chiikawacoding.exception.BusinessException;
 import com.chiikawa.chiikawacoding.exception.ErrorCode;
 import com.chiikawa.chiikawacoding.model.enums.CodeGenTypeEnum;

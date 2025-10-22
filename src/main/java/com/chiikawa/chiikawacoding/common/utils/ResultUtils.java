@@ -1,6 +1,7 @@
-package com.chiikawa.chiikawacoding.common;
+package com.chiikawa.chiikawacoding.common.utils;
 
 
+import com.chiikawa.chiikawacoding.common.baseReqAndRes.BaseResponse;
 import com.chiikawa.chiikawacoding.exception.ErrorCode;
 
 /**

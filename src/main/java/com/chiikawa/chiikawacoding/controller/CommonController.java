@@ -1,10 +1,9 @@
 package com.chiikawa.chiikawacoding.controller;
 
 
-import cn.hutool.json.JSONObject;
-import com.chiikawa.chiikawacoding.common.AliOssUtil;
-import com.chiikawa.chiikawacoding.common.BaseResponse;
-import com.chiikawa.chiikawacoding.common.ResultUtils;
+import com.chiikawa.chiikawacoding.common.utils.AliOssUtil;
+import com.chiikawa.chiikawacoding.common.baseReqAndRes.BaseResponse;
+import com.chiikawa.chiikawacoding.common.utils.ResultUtils;
 import com.chiikawa.chiikawacoding.exception.ErrorCode;
 import com.chiikawa.chiikawacoding.model.vo.FileUploadVO;
 import lombok.extern.slf4j.Slf4j;

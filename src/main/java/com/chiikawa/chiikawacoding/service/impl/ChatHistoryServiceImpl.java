@@ -1,7 +1,7 @@
 package com.chiikawa.chiikawacoding.service.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.chiikawa.chiikawacoding.constant.UserConstant;
+import com.chiikawa.chiikawacoding.common.constant.UserConstant;
 import com.chiikawa.chiikawacoding.exception.ErrorCode;
 import com.chiikawa.chiikawacoding.exception.ThrowUtils;
 import com.chiikawa.chiikawacoding.model.dto.chathistory.ChatHistoryQueryRequest;
@@ -16,7 +16,6 @@ import com.chiikawa.chiikawacoding.model.entity.ChatHistory;
 import com.chiikawa.chiikawacoding.mapper.ChatHistoryMapper;
 import com.chiikawa.chiikawacoding.service.ChatHistoryService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 

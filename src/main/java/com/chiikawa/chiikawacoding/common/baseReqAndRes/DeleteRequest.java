@@ -1,4 +1,4 @@
-package com.chiikawa.chiikawacoding.common;
+package com.chiikawa.chiikawacoding.common.baseReqAndRes;
 
 import lombok.Data;
 

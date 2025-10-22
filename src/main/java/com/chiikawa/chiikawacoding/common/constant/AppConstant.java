@@ -1,4 +1,4 @@
-package com.chiikawa.chiikawacoding.constant;
+package com.chiikawa.chiikawacoding.common.constant;
 
 public interface AppConstant {
     /**

@@ -2,10 +2,10 @@ package com.chiikawa.chiikawacoding.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.chiikawa.chiikawacoding.annotation.AuthCheck;
-import com.chiikawa.chiikawacoding.common.BaseResponse;
-import com.chiikawa.chiikawacoding.common.DeleteRequest;
-import com.chiikawa.chiikawacoding.common.ResultUtils;
-import com.chiikawa.chiikawacoding.constant.UserConstant;
+import com.chiikawa.chiikawacoding.common.baseReqAndRes.BaseResponse;
+import com.chiikawa.chiikawacoding.common.baseReqAndRes.DeleteRequest;
+import com.chiikawa.chiikawacoding.common.utils.ResultUtils;
+import com.chiikawa.chiikawacoding.common.constant.UserConstant;
 import com.chiikawa.chiikawacoding.exception.BusinessException;
 import com.chiikawa.chiikawacoding.exception.ErrorCode;
 import com.chiikawa.chiikawacoding.exception.ThrowUtils;

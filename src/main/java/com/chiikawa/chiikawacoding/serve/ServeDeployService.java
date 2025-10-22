@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.chiikawa.chiikawacoding.constant.AppConstant.CODE_DEPLOY_ROOT_DIR;
+import static com.chiikawa.chiikawacoding.common.constant.AppConstant.CODE_DEPLOY_ROOT_DIR;
 
 @Service
 public class ServeDeployService {

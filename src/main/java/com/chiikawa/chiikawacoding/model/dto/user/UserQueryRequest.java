@@ -1,6 +1,6 @@
 package com.chiikawa.chiikawacoding.model.dto.user;
 
-import com.chiikawa.chiikawacoding.common.PageRequest;
+import com.chiikawa.chiikawacoding.common.baseReqAndRes.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

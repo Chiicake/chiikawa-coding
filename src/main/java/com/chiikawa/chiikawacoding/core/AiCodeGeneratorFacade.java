@@ -8,8 +8,12 @@ import com.chiikawa.chiikawacoding.core.saver.CodeFileSaverExecutor;
 import com.chiikawa.chiikawacoding.exception.BusinessException;
 import com.chiikawa.chiikawacoding.exception.ErrorCode;
 import com.chiikawa.chiikawacoding.model.enums.CodeGenTypeEnum;
+import dev.langchain4j.community.store.memory.chat.redis.RedisChatMemoryStore;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.service.AiServices;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -25,6 +29,7 @@ public class AiCodeGeneratorFacade {
     @Resource
     private AiCodeGeneratorService aiCodeGeneratorService;
 
+
     /**
      * 统一入口：根据类型生成并保存代码（使用 appId）
      *
@@ -38,7 +43,7 @@ public class AiCodeGeneratorFacade {
         }
         return switch (codeGenTypeEnum) {
             case HTML -> {
-                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(userMessage);
+                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(1,userMessage);
                 yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.HTML, appId);
             }
             case MULTI_FILE -> {

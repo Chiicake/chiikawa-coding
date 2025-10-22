@@ -1,4 +1,4 @@
-package com.chiikawa.chiikawacoding.common;
+package com.chiikawa.chiikawacoding.common.utils;
 
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;

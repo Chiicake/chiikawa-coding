@@ -1,6 +1,6 @@
 package com.chiikawa.chiikawacoding.config;
 
-import com.chiikawa.chiikawacoding.common.AliOssUtil;
+import com.chiikawa.chiikawacoding.common.utils.AliOssUtil;
 import com.chiikawa.chiikawacoding.common.properties.AliOssProperties;
 import lombok.extern.slf4j.Slf4j;
 

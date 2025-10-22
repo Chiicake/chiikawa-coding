@@ -1,8 +1,8 @@
 package com.chiikawa.chiikawacoding.exception;
 
 
-import com.chiikawa.chiikawacoding.common.BaseResponse;
-import com.chiikawa.chiikawacoding.common.ResultUtils;
+import com.chiikawa.chiikawacoding.common.baseReqAndRes.BaseResponse;
+import com.chiikawa.chiikawacoding.common.utils.ResultUtils;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;

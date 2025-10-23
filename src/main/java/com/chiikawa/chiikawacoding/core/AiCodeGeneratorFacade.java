@@ -1,6 +1,7 @@
 package com.chiikawa.chiikawacoding.core;
 
 import com.chiikawa.chiikawacoding.ai.AiCodeGeneratorService;
+import com.chiikawa.chiikawacoding.ai.AiCodeGeneratorServiceFactory;
 import com.chiikawa.chiikawacoding.ai.model.HtmlCodeResult;
 import com.chiikawa.chiikawacoding.ai.model.MultiFileCodeResult;
 import com.chiikawa.chiikawacoding.core.parser.CodeParserExecutor;
@@ -27,7 +28,10 @@ import java.io.File;
 public class AiCodeGeneratorFacade {
 
     @Resource
-    private AiCodeGeneratorService aiCodeGeneratorService;
+    private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
+
+
+
 
 
     /**
@@ -38,16 +42,18 @@ public class AiCodeGeneratorFacade {
      * @return 保存的目录
      */
     public File generateAndSaveCode(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
+        // 根据 appId 获取对应的 AI 服务实例
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
         return switch (codeGenTypeEnum) {
             case HTML -> {
-                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(1,userMessage);
+                HtmlCodeResult result = aiCodeGeneratorService.generateHtmlCode(appId, userMessage);
                 yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.HTML, appId);
             }
             case MULTI_FILE -> {
-                MultiFileCodeResult result = aiCodeGeneratorService.generateMultiFileCode(userMessage);
+                MultiFileCodeResult result = aiCodeGeneratorService.generateMultiFileCode(appId, userMessage);
                 yield CodeFileSaverExecutor.executeSaver(result, CodeGenTypeEnum.MULTI_FILE, appId);
             }
             default -> {
@@ -65,16 +71,18 @@ public class AiCodeGeneratorFacade {
      * @param appId           应用 ID
      */
     public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
+        // 根据 appId 获取对应的 AI 服务实例
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
         return switch (codeGenTypeEnum) {
             case HTML -> {
-                Flux<String> codeStream = aiCodeGeneratorService.generateHtmlCodeStream(userMessage);
+                Flux<String> codeStream = aiCodeGeneratorService.generateHtmlCodeStream(appId, userMessage);
                 yield processCodeStream(codeStream, CodeGenTypeEnum.HTML, appId);
             }
             case MULTI_FILE -> {
-                Flux<String> codeStream = aiCodeGeneratorService.generateMultiFileCodeStream(userMessage);
+                Flux<String> codeStream = aiCodeGeneratorService.generateMultiFileCodeStream(appId, userMessage);
                 yield processCodeStream(codeStream, CodeGenTypeEnum.MULTI_FILE, appId);
             }
             default -> {

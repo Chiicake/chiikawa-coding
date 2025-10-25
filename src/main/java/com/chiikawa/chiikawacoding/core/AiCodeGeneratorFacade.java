@@ -30,10 +30,6 @@ public class AiCodeGeneratorFacade {
     @Resource
     private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
 
-
-
-
-
     /**
      * 统一入口：根据类型生成并保存代码（使用 appId）
      *

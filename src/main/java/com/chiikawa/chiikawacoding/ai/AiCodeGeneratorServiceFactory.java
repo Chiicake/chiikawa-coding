@@ -79,7 +79,8 @@ public class AiCodeGeneratorServiceFactory {
      * 根据 appId 获取服务（带缓存）
      */
     public AiCodeGeneratorService getAiCodeGeneratorService(long appId) {
-        return serviceCache.get(appId, this::createAiCodeGeneratorService);
+        AiCodeGeneratorService aiCodeGeneratorService = serviceCache.get(appId, this::createAiCodeGeneratorService);
+        return aiCodeGeneratorService;
     }
 
     /**

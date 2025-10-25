@@ -61,7 +61,7 @@ import iconImg from '@/assets/images/icon.png'
 // 初始化状态和路由
 const router = useRouter()
 const loginUserStore = useLoginUserStore()
-const siteTitle = ref('Chiikawa Coding')
+const siteTitle = ref('Chiicake')
 const logoUrl = ref<string>(iconImg)
 
 // 菜单配置项
@@ -308,3 +308,4 @@ const handleLogout = async () => {
 
 
 
+

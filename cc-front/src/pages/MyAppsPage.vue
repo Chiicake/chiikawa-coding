@@ -150,7 +150,7 @@ onMounted(async () => {
     <div class="search-section">
       <Input.Search
         v-model:value="appNameSearch"
-        placeholder="搜一搜大家的可爱作品～"
+        placeholder="搜一搜大家的作品～"
         enter-button="搜一下"
         @search="handleSearch"
         style="max-width: 500px; margin: 0 auto 24px"
@@ -159,7 +159,7 @@ onMounted(async () => {
 
     <!-- 我的应用/我的小作品 -->
     <div v-if="loginUserStore.loginUser" class="apps-section">
-      <Typography.Title :level="3" class="section-title">我的小作品</Typography.Title>
+      <Typography.Title :level="3" class="section-title">我的作品</Typography.Title>
       <div v-if="userAppsLoading && userApps.length === 0" class="loading-container">
         <Spin size="large" />
       </div>
@@ -168,15 +168,15 @@ onMounted(async () => {
       </div>
       <div v-else class="apps-grid">
         <Row :gutter="[16, 16]" justify="space-between" align="top">
-          <Col 
-            v-for="app in userApps" 
-            :key="app.id" 
-            :xs="24" 
-            :sm="12" 
-            :md="8" 
+          <Col
+            v-for="app in userApps"
+            :key="app.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
             class="app-col"
           >
-            <Card 
+            <Card
               class="app-card"
               @click="handleAppClick(app)"
             >
@@ -190,7 +190,7 @@ onMounted(async () => {
                 <Button class="overlay-btn overlay-light" @click.stop="handleViewChat(app)">聊一聊</Button>
               </div>
               <div class="card-meta">
-                <Card.Meta 
+                <Card.Meta
                   :title="app.appName || '未命名应用'"
                   :description="`创建于 ${new Date(app.createTime || Date.now()).toLocaleDateString()}`"
                 />
@@ -200,7 +200,7 @@ onMounted(async () => {
         </Row>
         <!-- 加载更多 -->
         <div v-if="hasMoreUserApps" class="load-more">
-          <Button 
+          <Button
             @click="loadMoreUserApps"
             :loading="userAppsLoading"
             type="link"
@@ -213,7 +213,7 @@ onMounted(async () => {
 
     <!-- 大家的灵感 -->
     <div class="apps-section">
-      <Typography.Title :level="3" class="section-title">大家的灵感</Typography.Title>
+      <Typography.Title :level="3" class="section-title">精选作品</Typography.Title>
       <div v-if="featuredAppsLoading && featuredApps.length === 0" class="loading-container">
         <Spin size="large" />
       </div>
@@ -222,15 +222,15 @@ onMounted(async () => {
       </div>
       <div v-else class="apps-grid">
         <Row :gutter="[16, 16]" justify="space-between" align="top">
-          <Col 
-            v-for="app in featuredApps" 
-            :key="app.id" 
-            :xs="24" 
-            :sm="12" 
-            :md="8" 
+          <Col
+            v-for="app in featuredApps"
+            :key="app.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
             class="app-col"
           >
-            <Card 
+            <Card
               class="app-card"
               @click="handleAppClick(app)"
             >
@@ -244,7 +244,7 @@ onMounted(async () => {
                 <Button class="overlay-btn overlay-light" @click.stop="handleViewChat(app)">聊一聊</Button>
               </div>
               <div class="card-meta">
-                <Card.Meta 
+                <Card.Meta
                   :title="app.appName || '未命名应用'"
                   :description="`创建于 ${new Date(app.createTime || Date.now()).toLocaleDateString()}`"
                 />
@@ -254,7 +254,7 @@ onMounted(async () => {
         </Row>
         <!-- 加载更多 -->
         <div v-if="hasMoreFeaturedApps" class="load-more">
-          <Button 
+          <Button
             @click="loadMoreFeaturedApps"
             :loading="featuredAppsLoading"
             type="link"

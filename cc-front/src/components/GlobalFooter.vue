@@ -2,7 +2,7 @@
   <a-layout-footer class="footer">
     <div class="footer-content">
       <div class="copyright">
-        <span>© {{ currentYear }} Chiikawa Coding</span>
+        <span>© {{ currentYear }} Chiicake</span>
         <span class="divider">|</span>
         <a :href="githubUrl" target="_blank" rel="noopener noreferrer">
           开源代码

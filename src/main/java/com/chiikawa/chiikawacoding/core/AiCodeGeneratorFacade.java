@@ -68,7 +68,7 @@ public class AiCodeGeneratorFacade {
      */
     public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum, Long appId) {
         // 根据 appId 获取对应的 AI 服务实例
-        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId, codeGenTypeEnum);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
@@ -81,12 +81,17 @@ public class AiCodeGeneratorFacade {
                 Flux<String> codeStream = aiCodeGeneratorService.generateMultiFileCodeStream(appId, userMessage);
                 yield processCodeStream(codeStream, CodeGenTypeEnum.MULTI_FILE, appId);
             }
+            case VUE_PROJECT -> {
+                Flux<String> codeStream = aiCodeGeneratorService.generateVueProjectCodeStream(appId, userMessage);
+                yield processCodeStream(codeStream, CodeGenTypeEnum.VUE_PROJECT, appId);
+            }
             default -> {
                 String errorMessage = "不支持的生成类型：" + codeGenTypeEnum.getValue();
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR, errorMessage);
             }
         };
     }
+
 
     /**
      * 通用流式代码处理方法（使用 appId）
@@ -101,7 +106,7 @@ public class AiCodeGeneratorFacade {
         return codeStream.doOnNext(chunk -> {
             // 实时收集代码片段
             codeBuilder.append(chunk);
-            log.info("实时代码片段：{}", chunk);
+//            log.info("实时代码片段：{}", chunk);
         }).doOnComplete(() -> {
             // 流式返回完成后保存代码
             try {

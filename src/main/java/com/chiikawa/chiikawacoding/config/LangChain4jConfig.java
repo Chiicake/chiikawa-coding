@@ -54,7 +54,7 @@ public class LangChain4jConfig {
     }
 
     @Bean
-    public StreamingChatModel streamingChatModel() {
+    public StreamingChatModel openAiStreamingChatModel() {
         return OpenAiStreamingChatModel.builder()
                 .baseUrl(baseUrl)
                 .apiKey(apiKey)
